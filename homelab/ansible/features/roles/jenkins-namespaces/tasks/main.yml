@@ -1,0 +1,24 @@
+- name: Create jenkins namespace
+  kubernetes.core.k8s:
+    name: jenkins-dev
+    api_version: v1
+    kind: Namespace
+    state: present
+    
+- name: Read node-token from master
+  slurp:
+    path: "/etc/rancher/k3s/k3s.yaml"
+  register: kubeconfig
+
+- name: Deploy kubeconfig secret inside elastic namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: master-kubeconfig
+        namespace: jenkins
+      stringData:
+        config: "{{ kubeconfig.content | b64decode | regex_replace('127.0.0.1:6443', 'kubernetes.default.svc:443') }}"
+      type: Opaque

@@ -1,0 +1,17 @@
+---
+
+- name: Git checkout synology-csi
+  ansible.builtin.git:
+    repo: 'https://github.com/SynologyOpenSource/synology-csi'
+    dest: /tmp/synology-csi
+    version: v1.1.1
+
+- name: Uninstall csi driver
+  command: ./scripts/uninstall.sh
+  args:
+    chdir: /tmp/synology-csi
+
+- name: Remove synology-csi directory
+  file:
+    state: absent
+    path: /tmp/synology-csi

@@ -1,0 +1,18 @@
+- name: Create Sealed Secret Certificate
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'sealed-secret-key.yaml.j2'
+
+- name: Add sealed-secrets chart repo
+  kubernetes.core.helm_repository:
+    name: sealed-secrets
+    repo_url: "https://bitnami-labs.github.io/sealed-secrets"
+
+- name: Deploy latest version of sealed-secrets chart inside kube-system namespace
+  kubernetes.core.helm:
+    name: sealed-secrets
+    chart_ref: sealed-secrets/sealed-secrets
+    release_namespace: kube-system
+
+#helm upgrade cert-manager jetstack/cert-manager --namespace cert-manager --version v1.8.0 --set 'extraArgs={--dns01-recursive-nameservers-only,--dns01-recursive-nameservers=8.8.8.8:53\,1.1.1.1:53}' --set 'installCRDs=true'

@@ -1,0 +1,15 @@
+mirrors:
+  registry.stiil.dk:
+    endpoint:
+    - "https://registry.stiil.dk"
+  docker.elastic.co:
+    endpoint:
+    - "https://docker.elastic.co/"
+  registry.k8s.io:
+    endpoint:
+    - "https://registry.k8s.io/"
+configs:
+  registry.stiil.dk:
+    auth:
+      username: rancher # this is the registry username
+      password: 4VobL8sY7pQuN3LYZRVbRgY6vexf6qTL # this is the registry password

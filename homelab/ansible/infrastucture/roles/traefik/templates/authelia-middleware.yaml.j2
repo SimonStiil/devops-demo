@@ -1,0 +1,32 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: authelia-auth
+  namespace: traefik
+spec:
+  forwardAuth:
+    address: https://auth.stiil.dk/api/verify?rd=https://auth.stiil.dk/'
+    trustForwardHeader: true
+    authResponseHeaders:
+      - Remote-User
+      - Remote-Groups
+      - Remote-Name
+      - Remote-Email
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: authelia-auth-transform
+  namespace: traefik
+spec:
+  plugin:
+    htransformation:
+      Rules:
+      - Header: Authorization
+        Name: auth-transform-uppper
+        Type: Rename
+        Value: Proxy-Authorization
+      - Header: authorization
+        Name: auth-transform-lower
+        Type: Rename
+        Value: proxy-authorization

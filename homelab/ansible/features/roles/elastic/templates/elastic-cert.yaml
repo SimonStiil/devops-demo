@@ -1,0 +1,35 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: elasticsearch-master-certs
+  namespace: elastic
+spec:
+  dnsNames:
+  - elastic.k3s.stiil.dk
+  - elasticsearch-master
+  - elasticsearch-master.elastic
+  - elasticsearch-master.elastic.svc
+  - kibana.k3s.stiil.dk
+  - kibana-kibana
+  - kibana-kibana.elastic
+  - kibana-kibana.elastic.svc
+  - logstash.k3s.stiil.dk
+  - logstash
+  - logstash.elastic
+  - logstash.elastic.svc
+  - apm.k3s.stiil.dk
+  - apm-server-apm-server
+  - apm-server-apm-server.elastic
+  - apm-server-apm-server.elastic.svc
+  duration: 8760h # 90d
+  renewBefore: 720h # 30d
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: internal-issuer
+  secretName: elasticsearch-master-certs
+  usages:
+  - digital signature
+  - key encipherment
+  - client auth
+  - server auth

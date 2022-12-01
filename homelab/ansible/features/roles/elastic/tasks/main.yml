@@ -1,0 +1,58 @@
+- name: Create elastic namespace
+  kubernetes.core.k8s:
+    name: elastic
+    api_version: v1
+    kind: Namespace
+    state: present
+    
+- name: Deploy elastic-master-password secret inside elastic namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: elasticsearch-master-credentials
+        namespace: elastic
+      stringData:
+        username: elastic
+        password: "{{ base_password }}"
+      type: Opaque
+
+- name: Create Internal Elastic Certificate
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'elastic-cert.yaml'
+
+- name: Create Transport Trust for Internal Certificate
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'elastic-transport.yaml'
+
+- name: Add Elastic chart repo
+  kubernetes.core.helm_repository:
+    name: elastic
+    repo_url: "https://helm.elastic.co"
+
+- name: Deploy latest version of elasticsearch chart inside elastic namespace
+  kubernetes.core.helm:
+    name: elasticsearch
+    chart_ref: elastic/elasticsearch
+    release_namespace: elastic
+    values: "{{ lookup('template', 'elastic-values.yaml') | from_yaml }}"
+
+- name: Deploy latest version of kibana chart inside elastic namespace
+  kubernetes.core.helm:
+    name: kibana
+    chart_ref: elastic/kibana
+    release_namespace: elastic
+    values: "{{ lookup('template', 'kibana-values.yaml') | from_yaml }}"
+
+- name: Deploy latest version of apm-server chart inside elastic namespace
+  kubernetes.core.helm:
+    name: apm-server
+    chart_ref: elastic/apm-server
+    release_namespace: elastic
+    values: "{{ lookup('template', 'apm-values.yaml') | from_yaml }}"

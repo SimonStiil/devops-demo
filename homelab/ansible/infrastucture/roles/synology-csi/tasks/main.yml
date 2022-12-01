@@ -1,0 +1,55 @@
+---
+
+- name: Download GOlang binary
+  get_url:
+    url: https://go.dev/dl/go1.19.2.linux-amd64.tar.gz
+    dest: /tmp
+    owner: root
+    group: root
+    mode: 0755
+  when: ansible_facts.architecture == "x86_64"
+
+- name: Unarchive GOlang
+  ansible.builtin.unarchive:
+    src: /tmp/go1.19.2.linux-amd64.tar.gz
+    dest: /usr/local
+    remote_src: yes
+    
+- name: Set GOlang PATH
+  command: >-
+    echo 'export PATH=/usr/local/go/bin:${PATH}' |
+      sudo tee /etc/profile.d/go.sh
+  changed_when: true
+
+- name: Git checkout synology-csi
+  ansible.builtin.git:
+    repo: 'https://github.com/SynologyOpenSource/synology-csi'
+    dest: /tmp/synology-csi
+    version: v1.1.1
+    
+- name: Create settings file
+  template:
+    src: "client-info.yml.j2"
+    dest: "/tmp/synology-csi/config/client-info.yml"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install csi driver
+  command: ./scripts/deploy.sh run
+  args:
+    chdir: /tmp/synology-csi
+    creates: /var/lib/kubelet/plugins/csi.san.synology.com
+    
+- name: Remove incomplete storageclass
+  kubernetes.core.k8s:
+    name: synology-iscsi-storage
+    api_version: storage.k8s.io/v1
+    kind: StorageClass
+    state: absent
+    
+- name: Install Storageclass with parameters
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'synology-iscsi-storage.yaml'

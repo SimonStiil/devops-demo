@@ -1,0 +1,8 @@
+---
+collections:
+  - name: community.general
+  - name: kubernetes.core
+roles:
+  - src: git@github.com:geerlingguy/ansible-role-helm.git
+    scm: git
+    version: 1.0.1

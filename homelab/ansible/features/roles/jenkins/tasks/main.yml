@@ -1,0 +1,42 @@
+- name: Create jenkins namespace
+  kubernetes.core.k8s:
+    name: jenkins
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add Jenkins chart repo
+  kubernetes.core.helm_repository:
+    name: jenkins
+    repo_url: "https://charts.jenkins.io"
+    
+- name: Create robot email secret
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'email-secret.yaml.j2'
+      
+- name: Create github token secret
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'github-secret.yaml.j2'
+      
+- name: Create ldap password secret
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'ldap-secret.yaml.j2'
+
+- name: Create registry cred secret
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'dockercred.yaml.j2'
+
+- name: Deploy latest version of jenkins chart inside jenkins namespace
+  kubernetes.core.helm:
+    name: jenkins
+    chart_ref: jenkins/jenkins
+    release_namespace: jenkins
+    values: "{{ lookup('template', 'values.yaml') | from_yaml }}"

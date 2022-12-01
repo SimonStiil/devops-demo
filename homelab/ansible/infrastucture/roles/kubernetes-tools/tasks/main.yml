@@ -1,0 +1,66 @@
+---
+
+- name: Check if GOlang binary exists.
+  stat:
+    path: "/usr/local/go/bin/go"
+  register: golang_check
+  
+- name: Check golang version.
+  command: "/usr/local/go/bin/go version"
+  failed_when: false
+  changed_when: false
+  register: golang_existing_version
+  
+- name: Download GOlang binary
+  get_url:
+    url: https://go.dev/dl/go{{ golang_version }}.linux-amd64.tar.gz
+    dest: /tmp
+    owner: root
+    group: root
+    mode: 0755
+  register: golang_download
+  when: >
+    not golang_check.stat.exists
+    or golang_version not in golang_existing_version.stdout
+
+- name: Unarchive GOlang
+  ansible.builtin.unarchive:
+    src: /tmp/go1.19.2.linux-amd64.tar.gz
+    dest: /usr/local
+    remote_src: yes
+  when: golang_download is changed
+    
+- name: Set GOlang PATH
+  command: >-
+    echo 'export PATH=/usr/local/go/bin:${PATH}' |
+      sudo tee /etc/profile.d/go.sh
+  args:
+    creates: /etc/profile.d/go.sh
+  changed_when: true
+  when: >
+    not golang_check.stat.exists
+    or golang_version not in golang_existing_version.stdout
+  
+- name: Install pip
+  ansible.builtin.package:
+    name: python3-pip
+    state: present
+    
+- name: Install kubernetes package
+  ansible.builtin.pip:
+    name: kubernetes
+    
+- name: Create directory .kube
+  file:
+    path: /root/.kube
+    state: directory
+    owner: root
+    mode: "u=rwx,g=rx,o="
+
+- name: Copy config file to user home directory
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /root/.kube/config
+    remote_src: yes
+    owner: root
+    mode: "u=rw,g=,o="

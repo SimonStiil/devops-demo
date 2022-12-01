@@ -1,0 +1,33 @@
+---
+accessMode: unrestricted
+allowedPrincipalIds:
+- openldap_user://uid={{ ldap_principal_user }},cn=users,{{ ldap_dn }}
+apiVersion: management.cattle.io/v3
+connectionTimeout: 5000
+enabled: true
+groupDNAttribute: dn
+groupMemberMappingAttribute: member
+groupMemberUserAttribute: dn
+groupNameAttribute: cn
+groupObjectClass: posixGroup
+groupSearchAttribute: cn
+groupSearchBase: cn=groups,{{ ldap_dn }}
+kind: AuthConfig
+metadata:
+  name: openldap
+nestedGroupMembershipEnabled: true
+port: 389
+servers:
+- {{ ldap_server_name }}
+serviceAccountDistinguishedName: uid={{ ldap_sa_username }},cn=users,{{ ldap_dn }}
+serviceAccountPassword: cattle-global-data:openldapconfig-serviceaccountpassword
+starttls: false
+tls: false
+type: openLdapConfig
+userDisabledBitMask: 0
+userLoginAttribute: uid
+userMemberAttribute: memberOf
+userNameAttribute: cn
+userObjectClass: inetOrgPerson
+userSearchAttribute: uid|sn|givenName
+userSearchBase: cn=users,{{ ldap_dn }}

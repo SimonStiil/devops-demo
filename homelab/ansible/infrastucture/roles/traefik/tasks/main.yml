@@ -1,0 +1,49 @@
+- name: Create traefik namespace
+  kubernetes.core.k8s:
+    name: traefik
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Add Traefik chart repo
+  kubernetes.core.helm_repository:
+    name: traefik
+    repo_url: "https://traefik.github.io/charts"
+
+#Downloaded from https://raw.githubusercontent.com/traefik/traefik/master/integration/fixtures/k8s/01-gateway-api-crd.yml  
+- name: Install Traefik Gateway Alpha CRDs
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: '01-gateway-api-crd.yml'
+
+- name: Deploy latest version of traefik chart inside traefik namespace
+  kubernetes.core.helm:
+    name: traefik
+    chart_ref: traefik/traefik
+    release_namespace: traefik
+    values: "{{ lookup('template', 'values-no-elastic.yaml') | from_yaml }}"
+
+- name: Create Authelia Middleware Definition
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'authelia-middleware.yaml.j2'
+
+- name: Create Default Certificate
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'default-cert.yaml.j2'
+
+- name: Create Traefik Ingress
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'ingress.yaml.j2'
+
+- name: Create Kubernetes API Ingress
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'kubernetes-api-route.yaml.j2'

@@ -1,0 +1,41 @@
+extraEnvs:
+  - name: "NODE_OPTIONS"
+    value: "--max-old-space-size=1800"
+hostAliases: 
+- ip: "127.0.0.1"
+  hostnames:
+  - "kibana.k3s.stiil.dk"
+resources:
+  requests:
+    cpu: "1000m"
+    memory: "1Gi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"
+kibanaConfig:
+  kibana.yml: |
+    server.publicBaseUrl: https://kibana.k3s.stiil.dk
+    server.ssl:
+      enabled: true
+      key: /usr/share/kibana/config/certs/tls.key
+      certificate: /usr/share/kibana/config/certs/tls.crt
+    elasticsearch.ssl:
+      certificateAuthorities: /usr/share/kibana/config/certs/ca.crt
+      verificationMode: certificate
+ingress:
+  enabled: true
+  className: null
+  pathtype: ImplementationSpecific
+  annotations: 
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.tls: "true"
+  hosts:
+    - host: kibana.k3s.stiil.dk
+      paths:
+        - path: /
+service:
+  annotations:
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: elastic-transport@kubernetescrd
+protocol: https
+elasticsearchHosts: "https://elasticsearch-master:9200"

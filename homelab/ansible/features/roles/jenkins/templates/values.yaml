@@ -1,0 +1,132 @@
+rbac:
+  create: true
+  readSecrets: true
+persistence:
+  storageClass: nfs-csi
+controller:
+  additionalPlugins: 
+  - ldap
+  - http_request
+  - pipeline-maven
+  - pipeline-utility-steps
+  - pipeline-stage-view
+  - pipeline-github
+  - github-api
+  - github-branch-source
+  - github-autostatus
+  - job-dsl
+  - basic-branch-build-strategies
+  - email-ext
+  - mailer
+  - rebuild
+  - timestamper
+  - kubernetes-credentials-provider
+  - credentials-binding
+  ingress:
+    enabled: true
+    # Override for the default paths that map requests to the backend
+    apiVersion: "networking.k8s.io/v1"
+    annotations: 
+      kubernetes.io/ingress.class: traefik
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      cert-manager.io/cluster-issuer: {{ certificate_issuer_name }}
+    hostName: jenkins.{{ k3s_domain }}
+    tls: 
+    - hosts:
+      - jenkins.{{ k3s_domain }}
+      secretName: jenkins.{{ k3s_domain }}
+  jenkinsUrl: https://jenkins.{{ k3s_domain }}
+  jenkinsAdminEmail: {{ robot_email }}
+  additionalExistingSecrets:
+    - name: ldap
+      keyName: password
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "2048Mi"
+    limits:
+      cpu: "4000m"
+      memory: "8192Mi"
+  JCasC:
+    configScripts: 
+      github: |-
+        unclassified:
+          gitHubConfiguration:
+            apiRateLimitChecker: ThrottleForNormalize
+          gitHubPluginConfig:
+            configs:
+            - credentialsId: "github-token-secret"
+              name: "{{ github_organization }} Org"
+            hookUrl: "http://jenkins.{{ k3s_domain }}/github-webhook/"
+          gitSCM:
+            globalConfigEmail: "{{ github_email }}"
+            globalConfigName: "{{ github_organization }}"
+      ldap-settings: |-
+        jenkins:
+          securityRealm:
+            ldap:
+              configurations:
+              - groupMembershipStrategy:
+                  fromUserRecord:
+                    attributeName: "memberOf"
+                groupSearchBase: "cn=groups"
+                groupSearchFilter: "(& (cn={0}) (objectClass=posixGroup))"
+                inhibitInferRootDN: false
+                managerDN: "uid={{ ldap_sa_username }},cn=users,{{ ldap_dn }}"
+                managerPasswordSecret: ${ldap-password}
+                rootDN: "{{ ldap_dn }}"
+                server: "ldap://{{ ldap_server_name }}"
+                userSearchBase: "cn=users"
+              disableMailAddressResolver: false
+              disableRolePrefixing: true
+              groupIdStrategy: "caseInsensitive"
+              userIdStrategy: "caseInsensitive"
+      email-ext: |-
+        unclassified:
+          email-ext:
+            adminRequiredForTemplateTesting: false
+            allowUnregisteredEnabled: false
+            charset: "UTF-8"
+            debugMode: false
+            defaultBody: |-
+              $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
+              Check console output at $BUILD_URL to view the results.
+            defaultContentType: "text/plain"
+            defaultRecipients: "{{ github_email }}"
+            defaultSubject: "$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!"
+            defaultSuffix: "@gmail.com"
+            defaultTriggerIds:
+            - "hudson.plugins.emailext.plugins.trigger.FailureTrigger"
+            mailAccount:
+              credentialsId: "email-secret"
+              smtpHost: "send.one.com"
+              smtpPort: "465"
+              useSsl: true
+            maxAttachmentSize: -1
+            maxAttachmentSizeMb: -1
+            precedenceBulk: false
+            watchingEnabled: false
+      pipeline-library: |-
+        unclassified:
+          globalLibraries:
+            libraries:
+            - defaultVersion: "main"
+              name: "pipeline-library"
+              retriever:
+                modernSCM:
+                  scm:
+                    github:
+                      configuredByUrl: true
+                      credentialsId: "github-login-secret"
+                      id: "2140d28d-d704-4e67-8119-41a227e893b5"
+                      repoOwner: "{{ github_organization }}"
+                      repository: "pipeline-library"
+                      repositoryUrl: "https://github.com/{{ github_organization }}/pipeline-library"
+                      traits:
+                      - gitHubBranchDiscovery:
+                          strategyId: 1
+                      - gitHubPullRequestDiscovery:
+                          strategyId: 1
+                      - gitHubForkDiscovery:
+                          strategyId: 1
+                          trust: "gitHubTrustPermissions"

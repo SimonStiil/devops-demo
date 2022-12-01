@@ -1,0 +1,10 @@
+hostname: rancher.k3s.stiil.dk
+replicas: -1
+bootstrapPassword: {{ base_password }}
+ingress:
+  tls:
+    source: secret
+    secretName: {{ rancher_hostname }}
+  extraAnnotations:
+    cert-manager.io/cluster-issuer: {{ certificate_issuer_name }}
+    traefik.ingress.kubernetes.io/router.tls: "true"

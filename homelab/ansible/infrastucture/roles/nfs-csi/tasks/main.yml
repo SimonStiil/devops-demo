@@ -1,0 +1,34 @@
+---
+
+- name: Add csi-driver-nfs chart repo
+  kubernetes.core.helm_repository:
+    name: csi-driver-nfs
+    repo_url: "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts"
+
+#https://github.com/kubernetes-csi/csi-driver-nfs/tree/master/charts
+- name: Deploy latest version of csi-driver-nfs chart inside kube-system namespace
+  kubernetes.core.helm:
+    name: csi-driver-nfs
+    chart_ref: csi-driver-nfs/csi-driver-nfs
+    chart_version: v4.1.0
+    release_namespace: kube-system
+    
+- name: Create a Service object from an inline definition
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: nfs-csi
+      provisioner: nfs.csi.k8s.io
+      parameters:
+        server: diskstation.stiil.local
+        share: /volume1/kubernetes-nfs/
+        # csi.storage.k8s.io/provisioner-secret is only needed for providing mountOptions in DeleteVolume
+        # csi.storage.k8s.io/provisioner-secret-name: "mount-options"
+        # csi.storage.k8s.io/provisioner-secret-namespace: "default"
+      reclaimPolicy: Delete
+      volumeBindingMode: Immediate
+      mountOptions:
+        - nfsvers=4.1

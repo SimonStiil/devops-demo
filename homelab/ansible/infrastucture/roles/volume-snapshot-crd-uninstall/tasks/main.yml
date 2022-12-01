@@ -1,0 +1,37 @@
+---
+- name: Git checkout synology-csi
+  ansible.builtin.git:
+    repo: 'https://github.com/kubernetes-csi/external-snapshotter'
+    dest: /tmp/external-snapshotter
+    version: v4.0.0
+    depth: 1
+
+- name: Add io_volumesnapshotclasses
+  kubernetes.core.k8s:
+    state: absent
+    src: /tmp/external-snapshotter/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+
+- name: Add io_volumesnapshotcontents
+  kubernetes.core.k8s:
+    state: absent
+    src: /tmp/external-snapshotter/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+
+- name: Add io_volumesnapshots
+  kubernetes.core.k8s:
+    state: absent
+    src: /tmp/external-snapshotter/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+    
+- name: Add rbac-snapshot-controller
+  kubernetes.core.k8s:
+    state: absent
+    src: /tmp/external-snapshotter/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+
+- name: Add setup-snapshot-controller
+  kubernetes.core.k8s:
+    state: absent
+    src: /tmp/external-snapshotter/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+
+- name: Remove external-snapshotter directory
+  file:
+    state: absent
+    path: /tmp/external-snapshotter

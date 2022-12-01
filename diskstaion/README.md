@@ -39,3 +39,5 @@ Traefik can also divert Authentication to Authelia that does LDAP lookups for us
 
 
 ![](img/Diskstation-LoadBalancer.drawio.png)
+
+[Back](../about-homelab/README.md)

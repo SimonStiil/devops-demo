@@ -1,0 +1,56 @@
+---
+#https://github.com/elastic/helm-charts/blob/main/apm-server/values.yaml
+apmConfig:
+  apm-server.yml: |
+    apm-server:
+      host: "0.0.0.0:8200"
+      kibana:
+        enabled: true
+        host: "https://kibana-kibana:5601"
+        
+        username: '${ELASTICSEARCH_USERNAME}'
+        password: '${ELASTICSEARCH_PASSWORD}'
+        ssl:
+          enabled: true
+          certificate_authorities: 
+          - /usr/share/apm-server/config/certs/ca.crt
+    queue: {}
+    output.elasticsearch:
+      username: '${ELASTICSEARCH_USERNAME}'
+      password: '${ELASTICSEARCH_PASSWORD}'
+      protocol: https
+      hosts: ["elasticsearch-master:9200"]
+      ssl.certificate_authorities:
+      - /usr/share/apm-server/config/certs/ca.crt
+
+extraEnvs:
+  - name: "ELASTICSEARCH_USERNAME"
+    value: elastic
+  - name: "ELASTICSEARCH_PASSWORD"
+    valueFrom:
+      secretKeyRef:
+        name: elastic-master-password
+        key: password
+
+hostAliases: 
+- ip: "127.0.0.1"
+  hostnames:
+  - "apm.k3s.stiil.dk"
+
+
+ingress:
+  enabled: true
+  className: null
+  pathtype: ImplementationSpecific
+  annotations: 
+    kubernetes.io/ingress.class: traefik
+#    cert-manager.io/cluster-issuer: staging-issuer
+    traefik.ingress.kubernetes.io/router.tls: "true"
+  path: /
+  hosts:
+    - apm.k3s.stiil.dk
+
+secretMounts:
+  - name: elastic-cert
+    secretName: elastic-cert
+    path: /usr/share/apm-server/config/certs

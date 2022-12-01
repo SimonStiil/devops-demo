@@ -1,0 +1,22 @@
+---
+
+- name: Install nfs and iSCSI packages
+  ansible.builtin.apt:
+    pkg:
+    - nfs-common
+    - open-iscsi
+    update_cache: yes
+  register: iscsi_install
+
+- name: Enable service open-iscsi
+  ansible.builtin.service:
+    name: open-iscsi
+    enabled: yes
+  when: iscsi_install is changed
+  register: iscsi_enabled
+
+- name: Start service open-iscsi
+  ansible.builtin.service:
+    name: open-iscsi
+    state: started
+  when: iscsi_enabled is changed

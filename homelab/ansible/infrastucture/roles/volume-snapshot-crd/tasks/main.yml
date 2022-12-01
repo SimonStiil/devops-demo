@@ -1,0 +1,56 @@
+---
+- name: Git checkout synology-csi
+  ansible.builtin.git:
+    repo: 'https://github.com/kubernetes-csi/external-snapshotter'
+    dest: /tmp/external-snapshotter
+    version: v4.0.0
+    depth: 1
+    
+- name: Install pip
+  ansible.builtin.package:
+    name: python3-pip
+    state: present
+    
+- name: Install kubernetes package
+  ansible.builtin.pip:
+    name: kubernetes
+    
+- name: Create directory .kube
+  file:
+    path: /root/.kube
+    state: directory
+    owner: root
+    mode: "u=rwx,g=rx,o="
+
+- name: Copy config file to user home directory
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /root/.kube/config
+    remote_src: yes
+    owner: root
+    mode: "u=rw,g=,o="
+
+- name: Add io_volumesnapshotclasses
+  kubernetes.core.k8s:
+    state: present
+    src: /tmp/external-snapshotter/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+
+- name: Add io_volumesnapshotcontents
+  kubernetes.core.k8s:
+    state: present
+    src: /tmp/external-snapshotter/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+
+- name: Add io_volumesnapshots
+  kubernetes.core.k8s:
+    state: present
+    src: /tmp/external-snapshotter/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+    
+- name: Add rbac-snapshot-controller
+  kubernetes.core.k8s:
+    state: present
+    src: /tmp/external-snapshotter/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+
+- name: Add setup-snapshot-controller
+  kubernetes.core.k8s:
+    state: present
+    src: /tmp/external-snapshotter/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml

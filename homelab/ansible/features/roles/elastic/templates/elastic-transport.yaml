@@ -1,0 +1,9 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: ServersTransport
+metadata:
+  name: transport
+  namespace: elastic
+spec:
+  serverName: elasticsearch-master
+  rootCAsSecrets:
+  - "elasticsearch-master-certs"

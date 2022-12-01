@@ -1,0 +1,49 @@
+---
+# usage " - include: "
+- name: Create temporary Rancher access token
+  ansible.builtin.uri:
+    url: "https://{{ rancher_hostname }}/v3-public/localProviders/local?action=login"
+    method: POST
+    body_format: json
+    body:
+      username: admin
+      password: "{{ base_password }}"
+      ttl: 600000 # 10 min token
+      description: "initial setup"
+      responseType: json
+    status_code: 201
+  register: login_response
+
+- name: Set Rancher server-url
+  ansible.builtin.uri:
+    url: "https://{{ rancher_hostname }}/v3/settings/server-url"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ login_response.json.token }}"
+    body_format: json
+    body:
+      name: server-url
+      value: "https://{{ rancher_hostname }}"
+
+- name: Set Rancher telemetry opt-out
+  ansible.builtin.uri:
+    url: "https://{{ rancher_hostname }}/v3/settings/telemetry-opt"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ login_response.json.token }}"
+    body_format: json
+    body:
+      name: telemetry-opt
+      value: out
+
+- name: Set Rancher eula-agreed
+  ansible.builtin.uri:
+    url: "https://{{ rancher_hostname }}/v3/setting"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ login_response.json.token }}"
+    body_format: json
+    body:
+      name: eula-agreed
+      value: "{{ ansible_date_time.iso8601 }}"
+    status_code: 201

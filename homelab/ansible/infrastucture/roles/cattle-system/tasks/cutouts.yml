@@ -1,0 +1,12 @@
+
+- name: Create OpenLDAP Service Account secret
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'openldapconfig-serviceaccountpassword.yaml.j2'
+
+- name: Create OpenLDAP Auth Config
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: 'openldap_authconfig.yaml.j2'
