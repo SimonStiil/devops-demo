@@ -1,0 +1,10 @@
+roles:
+- src: git@github.com:SimonStiil/ansible-roles.git
+  scm: git
+  version: main
+  name: stiil-ansible-roles
+- src: diodonfrost.terraform
+
+
+collections:
+  - name: community.general

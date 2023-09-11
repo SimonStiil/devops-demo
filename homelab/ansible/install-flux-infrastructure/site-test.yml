@@ -1,0 +1,13 @@
+---
+  
+- hosts: test
+  gather_facts: yes
+  become: yes
+  roles:
+  - role: kubernetes/longhorn-prep
+  - role: tools/install-golang
+  - role: tools/ansible-kubernetes
+  - role: kubernetes/copy-kubeconfig
+  - role: tools/install-flux
+  - role: kubernetes/flux
+  - role: kubernetes/external-secrets

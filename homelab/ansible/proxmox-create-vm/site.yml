@@ -1,0 +1,17 @@
+---
+- hosts: pve
+  gather_facts: yes
+  become: yes
+  roles:
+#    - role: stiil-ansible-roles/proxmox/create-vm-terraform
+    - role: tools/ansible-helpers
+- hosts: pve
+  become: true
+  roles:
+    - role: diodonfrost.terraform
+- hosts: pve
+  gather_facts: yes
+  become: yes
+  roles:
+#    - role: stiil-ansible-roles/proxmox/create-vm-terraform
+    - role: proxmox/create-vm-terraform

@@ -1,0 +1,9 @@
+---
+- hosts: test
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: kubernetes/k3s-ansible/prereq
+    - role: kubernetes/k3s-ansible/download
+    - role: kubernetes/k3s-ansible/raspberrypi
+    - role: kubernetes/k3s-ansible/master

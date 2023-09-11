@@ -21,7 +21,7 @@ resource "proxmox_vm_qemu" "generate_vm" {
   disk{
     type = "scsi"
     storage = "local-lvm"
-	size = "128G"
+    size = "128G"
   }
   
   cores   = 8
