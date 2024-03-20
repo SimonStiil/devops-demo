@@ -1,0 +1,5 @@
+---
+- hosts: turing_nfs_server
+  become: yes
+  roles:
+    - role: ansible-roles/tools/nfs-server

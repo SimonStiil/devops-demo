@@ -1,0 +1,5 @@
+roles:
+- src: git@github.com:SimonStiil/ansible-roles.git
+  scm: git
+  version: main
+  name: ansible-roles

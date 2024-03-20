@@ -1,0 +1,18 @@
+---
+- hosts: turingpi
+  gather_facts: yes
+  become: yes
+  roles:
+    - role: ansible-roles/kubernetes/k3s-ansible/prereq
+    - role: ansible-roles/kubernetes/k3s-ansible/download
+    - role: ansible-roles/kubernetes/k3s-ansible/raspberrypi
+
+- hosts: master
+  become: yes
+  roles:
+    - role: ansible-roles/kubernetes/k3s-ansible/master
+
+- hosts: turingpi_agents
+  become: yes
+  roles:
+    - role: ansible-roles/kubernetes/k3s-ansible/node
