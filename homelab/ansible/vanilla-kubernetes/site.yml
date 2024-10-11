@@ -1,0 +1,7 @@
+---
+
+- hosts: node1.stiil.home
+  become: yes
+  roles:
+#    - role: tools/install-containerd
+    - role: tools/install-kubeadm

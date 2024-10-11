@@ -3,7 +3,7 @@
   gather_facts: yes
   become: yes
   roles:
-  - role: ansible-roles/tools/nfs-client
+  - role: ansible-roles/kubernetes/longhorn-prep
 
 - hosts: turing_master
   gather_facts: yes
