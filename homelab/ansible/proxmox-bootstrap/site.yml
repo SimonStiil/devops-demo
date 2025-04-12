@@ -3,8 +3,8 @@
   gather_facts: yes
   become: yes
   roles:
-    - role: ansible-roles/proxmox/bootstrap
-    - role: ansible-roles/proxmox/bootstrap-user-personal
-    - role: ansible-roles/proxmox/bootstrap-user-terraform
-    - role: ansible-roles/proxmox/bootstrap-nfs
-    - role: ansible-roles/proxmox/bootstrap-certificate
+    - role: proxmox/bootstrap
+    - role: proxmox/bootstrap-user-personal
+    - role: proxmox/bootstrap-user-terraform
+    - role: proxmox/bootstrap-nfs
+    - role: proxmox/bootstrap-certificate

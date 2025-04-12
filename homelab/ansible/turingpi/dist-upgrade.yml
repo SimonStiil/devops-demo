@@ -1,6 +1,6 @@
 ---
 - hosts:
-    turingpi
+    k3s_cluster
   gather_facts: no
   become: yes
   vars:
@@ -36,6 +36,7 @@
         file:
           path: "{{ log_dir }}"
           state: directory
+          recurse: true
         changed_when: false
 
       - name: "Write changes to logfile"
@@ -44,5 +45,6 @@
           dest: "{{ log_dir }}/dist-upgrade_{{ ansible_date_time.iso8601 }}.log"
         changed_when: false
 
+      become: no
       when: updated is defined
       connection: local

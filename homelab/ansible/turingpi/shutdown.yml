@@ -1,6 +1,6 @@
 ---
 - hosts:
-    turingpi
+    k3s_cluster
   gather_facts: no
   become: yes
   tasks:

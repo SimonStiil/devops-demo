@@ -1,0 +1,17 @@
+---
+- name: set vlan
+  hosts: pve
+  gather_facts: yes
+  become: yes
+  tasks:
+  - name: Get Network Settings
+    command: >-
+      qm config {{ pve_vm_id }}
+    register: result
+    when: proxmox_vm_vlan is defined
+#  - name: debug
+#    debug:
+#      msg: "qm set {{ pve_vm_id }} --net0 {{ result.stdout | regex_search('virtio=([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})')}},bridge={{ proxmox_vm_bridge }},tag={{ proxmox_vm_vlan }}"
+  - name: Set Network Settings
+    command: "qm set {{ pve_vm_id }} --net0 {{ result.stdout | regex_search('virtio=([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})')}},bridge={{ proxmox_vm_bridge }},tag={{ proxmox_vm_vlan }}"
+    when: proxmox_vm_vlan is defined
